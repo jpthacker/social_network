@@ -13,10 +13,15 @@ Otherwise, [follow this recipe to design and create the SQL schema for your tabl
 ```
 # EXAMPLE
 
-Table: students
+Table: user
 
 Columns:
-id | name | cohort_name
+id | username | email_address
+
+Table: posts
+
+Columns
+id | title | content | number_of_views | user_id
 ```
 
 ## 2. Create Test SQL seeds
@@ -35,13 +40,15 @@ If seed data is provided (or you already created it), you can skip this step.
 -- so we can start with a fresh state.
 -- (RESTART IDENTITY resets the primary key)
 
-TRUNCATE TABLE students RESTART IDENTITY; -- replace with your own table name.
+TRUNCATE TABLE users RESTART IDENTITY; -- replace with your own table name.
 
--- Below this line there should only be `INSERT` statements.
--- Replace these statements with your own seed data.
+INSERT INTO users (username, email_address) VALUES ('Ray', 'ray@makers.com');
+INSERT INTO users (username, email_address) VALUES ('Jack', 'jack@makers.com');
 
-INSERT INTO students (name, cohort_name) VALUES ('David', 'April 2022');
-INSERT INTO students (name, cohort_name) VALUES ('Anna', 'May 2022');
+TRUNCATE TABLE posts RESTART IDENTITY; -- replace with your own table name.
+
+INSERT INTO posts (title, content, number_of_views, user_id) VALUES ('baby photos', 'six months progress', 5, 1);
+INSERT INTO posts (title, content, number_of_views, user_id) VALUES ('cat photos', 'two years old', 3, 2);
 ```
 
 Run this SQL file on the database to truncate (empty) the table, and insert the seed data. Be mindful of the fact any existing records in the table will be deleted.
