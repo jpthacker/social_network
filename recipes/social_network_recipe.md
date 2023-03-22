@@ -21,7 +21,7 @@ id | username | email_address
 Table: posts
 
 Columns
-id | title | content | number_of_views | user_id
+id | title | content | no_of_views | user_id
 ```
 
 ## 2. Create Test SQL seeds
@@ -40,15 +40,20 @@ If seed data is provided (or you already created it), you can skip this step.
 -- so we can start with a fresh state.
 -- (RESTART IDENTITY resets the primary key)
 
-TRUNCATE TABLE users RESTART IDENTITY; -- replace with your own table name.
+TRUNCATE TABLE users, posts RESTART IDENTITY;
 
 INSERT INTO users (username, email_address) VALUES ('Ray', 'ray@makers.com');
 INSERT INTO users (username, email_address) VALUES ('Jack', 'jack@makers.com');
 
-TRUNCATE TABLE posts RESTART IDENTITY; -- replace with your own table name.
 
-INSERT INTO posts (title, content, number_of_views, user_id) VALUES ('baby photos', 'six months progress', 5, 1);
-INSERT INTO posts (title, content, number_of_views, user_id) VALUES ('cat photos', 'two years old', 3, 2);
+
+TRUNCATE TABLE users, posts RESTART IDENTITY;
+
+INSERT INTO users (username, email_address) VALUES ('Ray', 'ray@makers.com');
+INSERT INTO users (username, email_address) VALUES ('Jack', 'jack@makers.com');
+
+INSERT INTO posts (title, content, no_of_views, user_id) VALUES ('baby photos', 'six months progress', 5, 1);
+INSERT INTO posts (title, content, no_of_views, user_id) VALUES ('cat photos', 'two years old', 3, 2);
 ```
 
 Run this SQL file on the database to truncate (empty) the table, and insert the seed data. Be mindful of the fact any existing records in the table will be deleted.
@@ -65,14 +70,16 @@ Usually, the Model class name will be the capitalised table name (single instead
 # EXAMPLE
 # Table name: students
 
-# Model class
-# (in lib/student.rb)
-class Student
+class User
 end
 
-# Repository class
-# (in lib/student_repository.rb)
-class StudentRepository
+class UserRepository
+end
+
+class Post
+end
+
+class PostRepository
 end
 ```
 
@@ -87,10 +94,16 @@ Define the attributes of your Model class. You can usually map the table columns
 # Model class
 # (in lib/student.rb)
 
-class Student
+class User
 
   # Replace the attributes by your own columns.
-  attr_accessor :id, :name, :cohort_name
+  attr_accessor :id, :username, :email_address
+end
+
+class Post
+
+  # Replace the attributes by your own columns.
+  attr_accessor :id, :title, :content, :no_of_views, :user_id
 end
 
 # The keyword attr_accessor is a special Ruby feature
@@ -117,36 +130,78 @@ Using comments, define the method signatures (arguments and return value) and wh
 # Repository class
 # (in lib/student_repository.rb)
 
-class StudentRepository
+class UserRepository
 
   # Selecting all records
   # No arguments
   def all
     # Executes the SQL query:
-    # SELECT id, name, cohort_name FROM students;
+    # SELECT id, username, email_address FROM users;
 
-    # Returns an array of Student objects.
+    # Returns an array of User objects.
   end
 
   # Gets a single record by its ID
   # One argument: the id (number)
   def find(id)
     # Executes the SQL query:
-    # SELECT id, name, cohort_name FROM students WHERE id = $1;
+    # SELECT id, username, email_address FROM users WHERE id = $1;
 
-    # Returns a single Student object.
+    # Returns a single User object.
   end
 
   # Add more methods below for each operation you'd like to implement.
 
-  # def create(student)
-  # end
+  def create(user)
+    # Executes the SQL query:
+    # INSERT INTO users (username, email_address) VALUES ($1, $2);
+    # Returns nil
+  end
 
-  # def update(student)
-  # end
+  def update(user)
+    # UPDATE users SET username = $1, email_address = $2 WHERE id = $3;
+  end
 
-  # def delete(student)
-  # end
+  def delete(id)
+  # DELETE FROM users WHERE id = $1;
+  end
+end
+
+class PostRepository
+
+  # Selecting all records
+  # No arguments
+  def all
+    # Executes the SQL query:
+    # SELECT id, title, content, no_of_views, user_id FROM posts;
+
+    # Returns an array of Post objects.
+  end
+
+  # Gets a single record by its ID
+  # One argument: the id (number)
+  def find(id)
+    # Executes the SQL query:
+    # SELECT id, title, content, no_of_views, user_id FROM posts WHERE id = $1;
+
+    # Returns a single Post object.
+  end
+
+  # Add more methods below for each operation you'd like to implement.
+
+  def create(user)
+    # Executes the SQL query:
+    # INSERT INTO posts (title, content, no_of_views, user_id) VALUES ($1, $2, $3, $4);
+    # Returns nil
+  end
+
+  def update(user)
+    # UPDATE posts SET title = $1, content = $2, no_of_views = $3, user_id = $4 WHERE id = $5;
+  end
+
+  def delete(id)
+  # DELETE FROM posts WHERE id = $1;
+  end
 end
 ```
 
@@ -159,35 +214,199 @@ These examples will later be encoded as RSpec tests.
 ```ruby
 # EXAMPLES
 
-# 1
-# Get all students
+# 1 UserRepository
+# Get all users
 
-repo = StudentRepository.new
+repo = UserRepository.new
 
-students = repo.all
+users = repo.all
 
-students.length # =>  2
+users.length # =>  2
 
-students[0].id # =>  1
-students[0].name # =>  'David'
-students[0].cohort_name # =>  'April 2022'
+users[0].id # =>  1
+users[0].username # =>  'Ray'
+users[0].email_address # =>  'Ray@makers.com'
 
-students[1].id # =>  2
-students[1].name # =>  'Anna'
-students[1].cohort_name # =>  'May 2022'
+users[1].id # =>  2
+users[1].username # =>  'Jack'
+users[1].email_address # =>  'jack@makers.com'
 
-# 2
-# Get a single student
 
-repo = StudentRepository.new
+# Get a single user
 
-student = repo.find(1)
+repo = UserRepository.new
 
-student.id # =>  1
-student.name # =>  'David'
-student.cohort_name # =>  'April 2022'
+user = repo.find(1)
 
-# Add more examples for each method
+user.id # =>  1
+user.username # =>  'Ray'
+user.email_address # =>  'Ray@makers.com'
+
+user = repo.find(2)
+
+user.id # =>  2
+user.username # =>  'Jack'
+user.email_address # =>  'jack@makers.com'
+
+# Create a new user
+repo = UserRepository.new
+
+user = User.new
+
+user.username = 'Jay'
+user.email_address = 'jay@makers.com'
+
+repo.create(user)
+users = repo.all
+
+users.last.username # => 'Jay'
+users.last.email_address # => 'jay@makers.com'
+
+# Delete a user
+repo = UserRepository.new
+
+user = repo.find(1)
+
+user.id # =>  1
+user.username # =>  'Ray'
+user.email_address # =>  'Ray@makers.com'
+
+repo.delete(user.id)
+
+users = repo.all
+
+users.length # =>  1
+
+users[0].id # =>  2
+users[0].username # =>  'Jack'
+users[0].email_address # =>  'jack@makers.com'
+
+# Update a user
+repo = UserRepository.new
+
+user = repo.find(1)
+
+user.id # =>  1
+user.username # =>  'Ray'
+user.email_address # =>  'Ray@makers.com'
+
+user.email_address = 'Ray2@makers.com'
+
+repo.update(user)
+
+updated_user = repo.find(1)
+
+updated_user.id # =>  1
+updated_user.username # =>  'Ray'
+updated_user.email_address # =>  'Ray2@makers.com'
+
+# 2 PostRepository
+# Get all posts
+
+repo = PostRepository.new
+
+posts = repo.all
+
+posts.length # =>  2
+
+posts[0].id # =>  1
+posts[0].title # =>  'baby photos'
+posts[0].content # =>  'six months progress'
+posts[0].no_of_views # => 5
+posts[0].user_id # => 1
+
+posts[1].id # =>  2
+posts[1].title # =>  'cat photos'
+posts[1].content # =>  'two years old'
+posts[1].no_of_views # => 3
+posts[1].user_id # => 2
+
+# Get a single post
+
+repo = PostRepository.new
+
+post = repo.find(1)
+
+post.id # =>  1
+post.title # =>  'baby photos'
+post.content # =>  'six months progress'
+post.no_of_views # => 5
+post.user_id # => 1
+
+post = repo.find(2)
+
+post.id # =>  2
+post.title # =>  'cat photos'
+post.content # =>  'two years old'
+post.no_of_views # => 3
+post.user_id # => 2
+
+# Create a new post
+
+repo = PostRepository.new
+
+post = Post.new
+
+post.title = 'dog photos'
+post.content = 'five years old'
+post.no_of_views = 6
+post.user_id = 1
+
+repo.create(post)
+posts = repo.all
+
+posts.last.title # =>  'dog photos'
+posts.last.content # =>  'five years old'
+posts.last.no_of_views # => 6
+posts.last.user_id # => 1
+
+# Delete a user
+repo = PostRepository.new
+
+post = repo.find(1)
+
+post.id # =>  1
+post.title # =>  'baby photos'
+post.content # =>  'six months progress'
+post.no_of_views # => 5
+post.user_id # => 1
+
+repo.delete(post.id)
+
+posts = repo.all
+
+posts.length # =>  1
+
+posts[0].id # =>  2
+posts[0].title # =>  'cat photos'
+posts[0].content # =>  'two years old'
+posts[0].no_of_views # => 3
+posts[0].user_id # => 2
+
+# Update a user
+repo = PostRepository.new
+
+post = repo.find(1)
+
+post.id # =>  1
+post.title # =>  'baby photos'
+post.content # =>  'six months progress'
+post.no_of_views # => 5
+post.user_id # => 1
+
+post.content = 'first birthday!'
+post.no_of_views = 20
+
+repo.update(post)
+
+updated_post = repo.find(1)
+
+updated_post.id # =>  1
+updated_post.title # =>  'baby photos'
+updated_post.content # =>  'first birthday!'
+updated_post.no_of_views # => 20
+updated_post.user_id # => 1
+
 ```
 
 Encode this example as a test.
@@ -203,15 +422,29 @@ This is so you get a fresh table contents every time you run the test suite.
 
 # file: spec/student_repository_spec.rb
 
-def reset_students_table
-  seed_sql = File.read('spec/seeds_students.sql')
-  connection = PG.connect({ host: '127.0.0.1', dbname: 'students' })
+def reset_users_table
+  seed_sql = File.read('spec/seeds_users.sql')
+  connection = PG.connect({ host: '127.0.0.1', dbname: 'social_network_test' })
   connection.exec(seed_sql)
 end
 
-describe StudentRepository do
+describe UserRepository do
   before(:each) do 
-    reset_students_table
+    reset_users_table
+  end
+
+  # (your tests will go here).
+end
+
+def reset_posts_table
+  seed_sql = File.read('spec/seeds_posts.sql')
+  connection = PG.connect({ host: '127.0.0.1', dbname: 'social_network_test' })
+  connection.exec(seed_sql)
+end
+
+describe PostRepository do
+  before(:each) do 
+    reset_posts_table
   end
 
   # (your tests will go here).
